@@ -45,8 +45,11 @@ export default async function handler(req, res) {
       ]
     });
 
-    return res.status(200).json(
-      JSON.parse(response.choices[0].message.content)
+   const parsed = JSON.parse(response.choices[0].message.content);
+
+console.log("AI RAW RESPONSE:", parsed);
+
+return res.status(200).json(parsed);
     );
 
   } catch (error) {
