@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -19,23 +18,29 @@ export default async function handler(req, res) {
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
+      response_format: { type: "json_object" },
       messages: [
+        {
+          role: "system",
+          content:
+            "You are a nutrition assistant. Identify foods and return ONLY valid JSON with calories, protein, carbs, and fat."
+        },
         {
           role: "user",
           content: [
-            { type: "text", text: "Estimate macros for this food image. Return JSON." },
+            { type: "text", text: "Analyze this food image and estimate macros." },
             { type: "image_url", image_url: { url: image } }
           ]
         }
       ]
     });
 
-    res.status(200).json(
+    return res.status(200).json(
       JSON.parse(response.choices[0].message.content)
     );
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    console.error("OpenAI error:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 }
