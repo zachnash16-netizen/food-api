@@ -58,7 +58,11 @@ module.exports = async function handler(req, res) {
     };
 
     return res.status(200).json({
-      macros: result
+      macros: result,
+      calories: result.calories,
+      protein: result.protein,
+      carbs: result.carbs,
+      fat: result.fat
     });
 
   } catch (error) {
