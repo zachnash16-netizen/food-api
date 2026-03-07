@@ -2,7 +2,7 @@ const OpenAI = require("openai");
 
 module.exports = async function handler(req, res) {
 
-  // CORS
+  // Allow requests from your app
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -16,12 +16,13 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+
     if (!req.body || !req.body.image) {
       return res.status(400).json({ error: "No image provided" });
     }
 
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY
     });
 
     const { image } = req.body;
@@ -33,37 +34,40 @@ module.exports = async function handler(req, res) {
         {
           role: "system",
           content:
-            "You are a nutrition assistant. Identify foods and return ONLY valid JSON with calories, protein, carbs, and fat."
+            "You are a nutrition assistant. Analyze the food image and return ONLY valid JSON with numeric fields: calories, protein, carbs, fat."
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Analyze this food image and estimate macros." },
+            { type: "text", text: "Estimate macros for this food image." },
             { type: "image_url", image_url: { url: image } }
           ]
         }
       ]
     });
 
-   const parsed = JSON.parse(response.choices[0].message.content);
+    const parsed = JSON.parse(response.choices[0].message.content);
 
-console.log("AI RAW RESPONSE:", parsed);
+    console.log("AI RAW RESPONSE:", parsed);
 
-// Normalize keys so the frontend always receives the same structure
-const result = {
-  calories: parsed.calories ?? parsed.total_calories ?? 0,
-  protein: parsed.protein ?? parsed.protein_g ?? 0,
-  carbs: parsed.carbs ?? parsed.carbohydrates ?? 0,
-  fat: parsed.fat ?? parsed.fat_g ?? 0
-};
+    const result = {
+      calories: parsed.calories ?? parsed.total_calories ?? 0,
+      protein: parsed.protein ?? parsed.protein_g ?? 0,
+      carbs: parsed.carbs ?? parsed.carbohydrates ?? 0,
+      fat: parsed.fat ?? parsed.fat_g ?? 0
+    };
 
-return res.status(200).json({
-  macros: result
-});
-  
+    return res.status(200).json(result);
 
   } catch (error) {
+
     console.error("OpenAI error:", error);
-    return res.status(500).json({ error: "Failed to analyze food image" });
+
+    return res.status(500).json({
+      error: "Failed to analyze food image",
+      details: error.message
+    });
+
   }
-}
+
+};
