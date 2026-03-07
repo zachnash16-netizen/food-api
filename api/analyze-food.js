@@ -57,7 +57,9 @@ module.exports = async function handler(req, res) {
       fat: parsed.fat ?? parsed.fat_g ?? 0
     };
 
-    return res.status(200).json(result);
+    return res.status(200).json({
+  macros: result
+});
 
   } catch (error) {
 
