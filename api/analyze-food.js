@@ -49,7 +49,15 @@ module.exports = async function handler(req, res) {
 
 console.log("AI RAW RESPONSE:", parsed);
 
-return res.status(200).json(parsed);
+// Normalize keys so the frontend always receives the same structure
+const result = {
+  calories: parsed.calories ?? parsed.total_calories ?? 0,
+  protein: parsed.protein ?? parsed.protein_g ?? 0,
+  carbs: parsed.carbs ?? parsed.carbohydrates ?? 0,
+  fat: parsed.fat ?? parsed.fat_g ?? 0
+};
+
+return res.status(200).json(result);
   
 
   } catch (error) {
