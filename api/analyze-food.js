@@ -58,7 +58,18 @@ module.exports = async function handler(req, res) {
     };
 
     return res.status(200).json({
-      macros: result,
+      data: {
+        calories: result.calories,
+        protein: result.protein,
+        carbs: result.carbs,
+        fat: result.fat
+      },
+      macros: {
+        calories: result.calories,
+        protein: result.protein,
+        carbs: result.carbs,
+        fat: result.fat
+      },
       calories: result.calories,
       protein: result.protein,
       carbs: result.carbs,
