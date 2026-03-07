@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
 console.log("AI RAW RESPONSE:", parsed);
 
 return res.status(200).json(parsed);
-    );
+  
 
   } catch (error) {
     console.error("OpenAI error:", error);
