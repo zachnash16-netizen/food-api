@@ -2,7 +2,7 @@ const OpenAI = require("openai");
 
 module.exports = async function handler(req, res) {
 
-  // CORS
+  // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -28,18 +28,18 @@ module.exports = async function handler(req, res) {
     const { image } = req.body;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1",
       response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content:
-            "You are a nutrition assistant. Identify all foods in the image, estimate portion sizes, and estimate macros for each food. Return ONLY valid JSON in this structure: { foods: [{ name: string, calories: number, protein: number, carbs: number, fat: number }] }"
+            "You are an expert nutrition AI. Analyze the food image carefully. Identify each food item, estimate portion size, and estimate macros using realistic nutrition values. Return ONLY valid JSON in this format: { foods: [{ name: string, portion: string, calories: number, protein: number, carbs: number, fat: number }] }"
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Analyze this food image and estimate macros." },
+            { type: "text", text: "Analyze this food image and estimate portion sizes and macros for each food item." },
             { type: "image_url", image_url: { url: image } }
           ]
         }
@@ -47,7 +47,13 @@ module.exports = async function handler(req, res) {
     });
 
     const content = response?.choices?.[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      parsed = {};
+    }
 
     console.log("AI RAW RESPONSE:", parsed);
 
