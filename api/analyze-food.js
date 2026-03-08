@@ -59,7 +59,9 @@ module.exports = async function handler(req, res) {
       foods: parsed.foods ?? []
     };
 
-    return res.status(200).json(result);
+    return res.status(200).json({
+      data: result
+    });
 
   } catch (error) {
 
