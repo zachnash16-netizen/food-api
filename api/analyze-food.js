@@ -60,7 +60,21 @@ module.exports = async function handler(req, res) {
     };
 
     return res.status(200).json({
-      data: result
+      items: [
+        {
+          name: "Detected food",
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fat: result.fat
+        }
+      ],
+      totals: {
+        calories: result.calories,
+        protein: result.protein,
+        carbs: result.carbs,
+        fat: result.fat
+      }
     });
 
   } catch (error) {
