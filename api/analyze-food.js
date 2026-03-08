@@ -2,7 +2,7 @@ const OpenAI = require("openai");
 
 module.exports = async function handler(req, res) {
 
-  // Allow requests from your app
+  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
         {
           role: "system",
           content:
-            "You are a nutrition assistant. Identify foods in the image and estimate portion sizes. Then calculate total macros. Return ONLY valid JSON with this structure: { foods: [{ name: string, portion: string }], calories: number, protein: number, carbs: number, fat: number }"
+            "You are a nutrition assistant. Identify all foods in the image, estimate portion sizes, and estimate macros for each food. Return ONLY valid JSON in this structure: { foods: [{ name: string, calories: number, protein: number, carbs: number, fat: number }] }"
         },
         {
           role: "user",
@@ -51,30 +51,30 @@ module.exports = async function handler(req, res) {
 
     console.log("AI RAW RESPONSE:", parsed);
 
-    const result = {
-      calories: Number(parsed.calories ?? parsed.total_calories ?? 0),
-      protein: Number(parsed.protein ?? parsed.protein_g ?? 0),
-      carbs: Number(parsed.carbs ?? parsed.carbohydrates ?? 0),
-      fat: Number(parsed.fat ?? parsed.fat_g ?? 0),
-      foods: parsed.foods ?? []
-    };
+    const foods = parsed.foods ?? [];
+
+    const items = foods.map(food => ({
+      name: food.name ?? "Food item",
+      calories: Number(food.calories ?? 0),
+      protein: Number(food.protein ?? 0),
+      carbs: Number(food.carbs ?? 0),
+      fat: Number(food.fat ?? 0)
+    }));
+
+    const totals = items.reduce(
+      (acc, item) => {
+        acc.calories += item.calories;
+        acc.protein += item.protein;
+        acc.carbs += item.carbs;
+        acc.fat += item.fat;
+        return acc;
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
 
     return res.status(200).json({
-      items: [
-        {
-          name: "Detected food",
-          calories: result.calories,
-          protein: result.protein,
-          carbs: result.carbs,
-          fat: result.fat
-        }
-      ],
-      totals: {
-        calories: result.calories,
-        protein: result.protein,
-        carbs: result.carbs,
-        fat: result.fat
-      }
+      items,
+      totals
     });
 
   } catch (error) {
